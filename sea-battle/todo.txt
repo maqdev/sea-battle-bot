@@ -1,0 +1,9 @@
+- fix placement
+- ai shot
+    - first
+    - direction based
+- play controller
+- draw shot boat
+- db saver/cache
+- telegram connect
+- score?
