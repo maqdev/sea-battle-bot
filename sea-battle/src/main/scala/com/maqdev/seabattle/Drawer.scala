@@ -105,11 +105,12 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
       g.setFont(new Font("Courier", Font.PLAIN, ((pointHeight+pointWidth)/3).toInt))
 
       for (x ← 1 to board.width) {
-        val c = ('a' + x - 1).toChar
+        val c = (x - 1).toString
         g.drawString(c.toString, ((x-1) * drawOptions.pointWidth + drawOptions.pointWidth/3).toFloat, (height - pointHeight/2).toFloat)
       }
       for (y ← 1 to board.height) {
-        g.drawString((y-1).toString, (width - pointWidth).toFloat, (y * drawOptions.pointHeight - drawOptions.pointHeight/3).toFloat)
+        val c = ('a' + y - 1).toChar
+        g.drawString(c.toString, (width - pointWidth).toFloat, (y * drawOptions.pointHeight - drawOptions.pointHeight/3).toFloat)
       }
 
       val missedShoots = board.shoots.clone()
