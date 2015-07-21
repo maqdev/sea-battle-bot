@@ -10,7 +10,7 @@ import spray.http._
 import scala.concurrent.Future
 
 class GameActor(botApi: BotApi) extends Actor with ActorLogging{
-  val coordsRegex = """^([a-z]+)([0-9]+)$""".r
+  val coordsRegex = """^/*([a-z]+)([0-9]+)$""".r
 
   override def receive: Receive = {
     case update: MessageUpdate ⇒ {
