@@ -2,6 +2,8 @@ organization := "com.maqdev"
 
 name := "sea-battle"
 
+version := "0.0.1"
+
 resolvers ++= Seq(
   Resolver.sonatypeRepo("public")
 )

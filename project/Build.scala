@@ -37,5 +37,5 @@ object Build extends sbt.Build {
 
   lazy val `sea-battle-root` = project.in(file(".")) aggregate(`sea-battle`, `sea-battle-bot`)
   lazy val `sea-battle` = project.in(file("sea-battle"))
-  lazy val `sea-battle-bot` = project.in(file("sea-battle-bot"))
+  lazy val `sea-battle-bot` = project.in(file("sea-battle-bot")) dependsOn `sea-battle`
 }

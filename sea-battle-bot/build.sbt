@@ -2,13 +2,14 @@ organization := "com.maqdev"
 
 name := "sea-battle-bot"
 
-version       := "0.0.1"
+version := "0.0.1"
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("public")
 )
 
 libraryDependencies ++= Seq(
+  "com.maqdev" %% "sea-battle" % "0.0.1",
   "eu.inn" %% "binders-core" % "0.6.57",
   "eu.inn" %% "binders-json" % "0.6.36",
   "com.typesafe" % "config" % "1.2.1",
