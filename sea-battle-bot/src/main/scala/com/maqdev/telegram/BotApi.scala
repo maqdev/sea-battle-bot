@@ -28,6 +28,13 @@ class BotApi(token: String, implicit val system: ActorSystem) {
     case Right(chatGroup) ⇒ sendPhoto(chatGroup.id, photo)
   }
 
+  def sendSticker(chatId: Int, sticker: String): Future[String] = send("sendSticker", Map("chat_id" → chatId.toString, "sticker" → sticker))
+
+  def sendSticker(chat: Either[User, GroupChat], sticker: String): Future[String] = chat match {
+    case Left(user) ⇒ sendSticker(user.id, sticker)
+    case Right(chatGroup) ⇒ sendSticker(chatGroup.id, sticker)
+  }
+
   def send(method: String, data: Map[String,String] = Map(), files: Map[String, FormFile] = Map()): Future[String] = {
     import system.dispatcher
     val uri = Uri(s"https://api.telegram.org/bot$token/$method")
@@ -59,3 +66,9 @@ case class User(id: Int, firstName: String, lastName: Option[String], username: 
 case class GroupChat(id: Int, title: String)
 case class Message(messageId: Int, from: User, date: Int, chat: Either[User, GroupChat], text: Option[String])
 case class MessageUpdate(updateId: Int, message: Message)
+
+object Stickers {
+  def smileyValera = "BQADAgAD0gIAAvqspAXRCXxzjnmnagI"
+  def ironicalMika = "BQADAgADxgIAAvqspAWPlbX9i9srDAI"
+  def piratMika = "BQADAgADyAIAAvqspAWFc0o8oD2c7QI"
+}

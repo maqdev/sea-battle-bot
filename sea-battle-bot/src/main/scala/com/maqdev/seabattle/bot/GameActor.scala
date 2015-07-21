@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream
 
 import akka.actor.{Actor, ActorLogging}
 import com.maqdev.seabattle.{ImageBoardDrawer, Point, SeaBattleGameBoard, SeaBattleGameCreator}
-import com.maqdev.telegram.{BotApi, GroupChat, MessageUpdate, User}
+import com.maqdev.telegram._
 import spray.http._
 
 import scala.concurrent.Future
@@ -19,6 +19,7 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
         case Right(group) ⇒ "people"
       }
       botApi.sendMessage(update.message.chat, s"Yo $name! Lets play?")
+      botApi.sendSticker(update.message.chat, Stickers.piratMika)
 
       val height = 10
       val width = 10
@@ -46,6 +47,7 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
             if (enemyBoard.complete) {
               sendBoards(update.message.chat, myBoard, enemyBoard)
               send(update.message.chat, "TADA! You Won!")
+              botApi.sendSticker(update.message.chat, Stickers.ironicalMika)
               context.unbecome()
             }
             else {
@@ -56,6 +58,7 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
               if (myBoard.complete) {
                 sendBoards(update.message.chat, myBoard, enemyBoard)
                 send(update.message.chat, "GAME OVER! Looser!")
+                botApi.sendSticker(update.message.chat, Stickers.smileyValera)
                 context.unbecome()
               } else {
                 sendBoards(update.message.chat, myBoard, enemyBoard)
