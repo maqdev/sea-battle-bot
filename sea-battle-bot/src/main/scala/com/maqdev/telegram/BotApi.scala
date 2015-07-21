@@ -3,7 +3,7 @@ package com.maqdev.telegram
 import akka.actor.ActorSystem
 import akka.event.Logging
 import spray.client.pipelining._
-import spray.http.{FormData, Uri}
+import spray.http._
 
 import scala.concurrent.Future
 
@@ -19,13 +19,31 @@ class BotApi(token: String, implicit val system: ActorSystem) {
     case Right(chatGroup) ⇒ sendMessage(chatGroup.id, text)
   }
 
-  def send(method: String, data: Map[String,String] = Map()): Future[String] = {
+  def sendPhoto(chatId: Int, photo: FormFile): Future[String] = send("sendPhoto", Map("chat_id" → chatId.toString),
+    Map("photo" → photo)
+  )
+
+  def sendPhoto(chat: Either[User, GroupChat], photo: FormFile): Future[String] = chat match {
+    case Left(user) ⇒ sendPhoto(user.id, photo)
+    case Right(chatGroup) ⇒ sendPhoto(chatGroup.id, photo)
+  }
+
+  def send(method: String, data: Map[String,String] = Map(), files: Map[String, FormFile] = Map()): Future[String] = {
     import system.dispatcher
     val uri = Uri(s"https://api.telegram.org/bot$token/$method")
-    log.info("--> telegram: {} {}", uri, data)
+    log.info("--> telegram: {} {} files: {}", uri, data, files.keys)
     val pipeline = sendReceive ~> unmarshal[String]
     pipeline {
-      Post(uri, FormData(data))
+      if (files.isEmpty) {
+        Post(uri, FormData(data))
+      }
+      else {
+        val mf = MultipartFormData(
+          data.map(kv ⇒ BodyPart( HttpEntity(kv._2),  kv._1 ) ).toSeq ++
+          files.map(kv ⇒ BodyPart(kv._2, kv._1)).toSeq
+        )
+        Post(uri, mf)
+      }
     } map { s ⇒
       log.info("<-- telegram: {} ", s)
       s

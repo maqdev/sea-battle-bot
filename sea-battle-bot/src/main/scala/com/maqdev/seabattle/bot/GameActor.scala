@@ -1,12 +1,13 @@
 package com.maqdev.seabattle.bot
 
-import akka.actor.Actor.Receive
-import akka.actor.{ActorLogging, Actor}
-import com.maqdev.seabattle.{Point, SeaBattleGameBoard, SeaBattleGameCreator}
-import com.maqdev.telegram.{GroupChat, MessageUpdate, BotApi, User}
+import java.io.ByteArrayOutputStream
 
-import scala.util.control.Breaks._
-import scala.util.matching.Regex
+import akka.actor.{Actor, ActorLogging}
+import com.maqdev.seabattle.{ImageBoardDrawer, Point, SeaBattleGameBoard, SeaBattleGameCreator}
+import com.maqdev.telegram.{BotApi, GroupChat, MessageUpdate, User}
+import spray.http._
+
+import scala.concurrent.Future
 
 class GameActor(botApi: BotApi) extends Actor with ActorLogging{
   val coordsRegex = """^([a-z]+)([0-9]+)$""".r
@@ -24,12 +25,13 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
       val creator = new SeaBattleGameCreator(width, height, List(1,2,2,3,3))
       val myBoard = creator.createBoard
       val enemyBoard = creator.createBoard
+
+      sendBoards(update.message.chat, myBoard, enemyBoard)
       context.become(playing(myBoard, enemyBoard))
     }
   }
 
   def playing(myBoard: SeaBattleGameBoard, enemyBoard: SeaBattleGameBoard): Receive = {
-
     case update: MessageUpdate ⇒ {
       update.message.text match {
         case Some(coordsRegex(y, x)) ⇒ {
@@ -42,7 +44,7 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
               send(update.message.chat, "You hit!")
 
             if (enemyBoard.complete) {
-              //printBoards()
+              sendBoards(update.message.chat, myBoard, enemyBoard)
               send(update.message.chat, "TADA! You Won!")
               context.unbecome()
             }
@@ -52,11 +54,11 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
               if (myBoard.shoot(enemyShoot))
                 send(update.message.chat, "You shot :-(")
               if (myBoard.complete) {
-                //printBoards()
-                send(update.message.chat, "GAME OVER!")
-                break()
+                sendBoards(update.message.chat, myBoard, enemyBoard)
+                send(update.message.chat, "GAME OVER! Looser!")
+                context.unbecome()
               } else {
-                //printBoards()
+                sendBoards(update.message.chat, myBoard, enemyBoard)
               }
             }
           }
@@ -68,4 +70,25 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
 
   def sendHelp(chat: Either[User,GroupChat]) = botApi.sendMessage(chat, "Please enter coordinates, for example e4")
   def send(chat: Either[User,GroupChat], msg: String) = botApi.sendMessage(chat, msg)
+
+  def sendBoard(chat: Either[User, GroupChat], myBoard: SeaBattleGameBoard, isMyBoard: Boolean): Future[String] = {
+    val out = new ByteArrayOutputStream()
+    val drawer = new ImageBoardDrawer(500,500,"png",out,isMyBoard)
+    drawer.drawBoard(myBoard)
+    val httpData = HttpData(out.toByteArray)
+    val httpEntity = HttpEntity(MediaTypes.`image/png`, httpData).asInstanceOf[HttpEntity.NonEmpty]
+    val formFile = FormFile("board.png", httpEntity)
+    botApi.sendPhoto(chat, formFile)
+  }
+
+  def sendBoards(chat: Either[User,GroupChat], myBoard: SeaBattleGameBoard, enemyBoard: SeaBattleGameBoard): Unit = {
+    import context.dispatcher
+    sendBoard(chat, myBoard, isMyBoard = true) map { r ⇒
+      sendBoard(chat, enemyBoard, isMyBoard = false)
+    } recover {
+      case e: Throwable ⇒
+        log.error(e, "Can't send board photo to " + chat.toString)
+        send(chat, "Something wrong :( ")
+    }
+  }
 }
