@@ -3,6 +3,8 @@ package com.maqdev.seabattle.bot
 import akka.actor.{Props, ActorRef, Actor}
 import akka.event.Logging
 import com.maqdev.telegram.{User, GroupChat, MessageUpdate, BotApi}
+import eu.inn.binders.dynamic.DefaultValueSerializerFactory
+import eu.inn.binders.naming.CamelCaseToSnakeCaseConverter
 import spray.http.MediaTypes._
 import spray.http._
 import spray.routing._
@@ -48,6 +50,9 @@ class BotServiceActor extends Actor with HttpService {
                 complete {
                   import eu.inn.binders.json._
                   try {
+                    implicit val factory = new DefaultSerializerFactory[CamelCaseToSnakeCaseConverter]
+                    implicit val defaultSerializerFactory = new DefaultValueSerializerFactory[CamelCaseToSnakeCaseConverter]
+                  
                     val update = data.parseJson[MessageUpdate]
                     val actorRef = gameActors.getOrElse(update.message.chat,
                       synchronized {

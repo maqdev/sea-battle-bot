@@ -37,7 +37,7 @@ class BotApi(token: String, implicit val system: ActorSystem) {
   }
 }
 
-case class User(id: Int, firstName: String, lastName: String, userName: String)
+case class User(id: Int, firstName: String, lastName: String, username: String)
 case class GroupChat(id: Int, title: String)
 case class Message(messageId: Int, from: User, date: Int, chat: Either[User, GroupChat], text: Option[String])
 case class MessageUpdate(updateId: Int, message: Message)

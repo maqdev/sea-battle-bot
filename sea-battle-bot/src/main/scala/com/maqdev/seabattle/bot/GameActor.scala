@@ -2,7 +2,7 @@ package com.maqdev.seabattle.bot
 
 import akka.actor.Actor.Receive
 import akka.actor.{ActorLogging, Actor}
-import com.maqdev.telegram.{MessageUpdate, BotApi, User, GroupChat}
+import com.maqdev.telegram.{MessageUpdate, BotApi, User}
 
 class GameActor(botApi: BotApi) extends Actor with ActorLogging{
 
