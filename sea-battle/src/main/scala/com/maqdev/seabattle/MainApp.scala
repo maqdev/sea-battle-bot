@@ -29,7 +29,7 @@ object MainApp extends App {
             println("Coordinates are wrong!")
           } else {
             if (enemyBoard.shoot(shootPoint))
-              println("You hit!")
+              println("Ew. You hit!")
 
             if (enemyBoard.complete) {
               printBoards()
@@ -38,9 +38,9 @@ object MainApp extends App {
             }
             else {
               val enemyShoot = myBoard.AIshoot
-              println(s"Enemy hit to $enemyShoot")
+              println(s"I hit to $enemyShoot !")
               if (myBoard.shoot(enemyShoot))
-                println("You shot :-(")
+                println("You've been shot. Ha ha ha!!!")
               if (myBoard.complete) {
                 printBoards()
                 println("GAME OVER!")

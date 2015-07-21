@@ -109,7 +109,7 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
         g.drawString(c.toString, ((x-1) * drawOptions.pointWidth + drawOptions.pointWidth/3).toFloat, (height - pointHeight/2).toFloat)
       }
       for (y ← 1 to board.height) {
-        g.drawString(y.toString, (width - pointWidth).toFloat, (y * drawOptions.pointHeight - drawOptions.pointHeight/3).toFloat)
+        g.drawString((y-1).toString, (width - pointWidth).toFloat, (y * drawOptions.pointHeight - drawOptions.pointHeight/3).toFloat)
       }
 
       val missedShoots = board.shoots.clone()
