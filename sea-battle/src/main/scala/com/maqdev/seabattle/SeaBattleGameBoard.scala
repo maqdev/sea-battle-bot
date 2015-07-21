@@ -12,9 +12,14 @@ class SeaBattleGameBoard(val width: Int,
                     val boats: Seq[Boat],
                     val shoots: mutable.Set[Point]) {
   val random = new Random(System.currentTimeMillis)
+  private [this] var _lastShoot: Option[Point] = None
+
+  def lastShoot: Option[Point] = _lastShoot
+  def isLast(point: Point): Boolean = lastShoot.map{ _ == point} getOrElse { false }
 
   def shoot(point: Point): Boolean = {
     if (!shoots.contains(point)) {
+      _lastShoot = Some(point)
       shoots += point
       boats.exists(_.coords.exists(_ == point))
     }

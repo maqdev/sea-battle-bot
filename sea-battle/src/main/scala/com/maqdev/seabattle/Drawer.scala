@@ -81,7 +81,12 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
     val canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
     val g = canvas.createGraphics()
     try {
-      g.setColor(Color.WHITE)
+      if (isMyBoard) {
+        g.setColor(Color.WHITE)
+      }
+      else {
+        g.setColor(new Color(0xE0, 0xEC, 0xFF))
+      }
       g.fillRect(0, 0, canvas.getWidth, canvas.getHeight)
       g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
         java.awt.RenderingHints.VALUE_ANTIALIAS_ON)
@@ -116,33 +121,33 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
       val missedShoots = board.shoots.clone()
       board.boats.foreach { boat ⇒
         boat.coords.foreach(missedShoots.remove)
-        drawBoat(g, drawOptions, boat, board.shoots)
+        drawBoat(g, drawOptions, boat, board)
       }
 
-      missedShoots.foreach(drawMissedShoot(g, drawOptions, _))
+      missedShoots.foreach(miss ⇒ drawMissedShoot(g, drawOptions, miss, board))
     } finally {
       g.dispose()
     }
     javax.imageio.ImageIO.write(canvas, format, outputStream)
   }
 
-  private def drawBoat(g: Graphics2D, drawOptions: DrawOptions, boat: Boat, shoots: mutable.Set[Point]) = {
-    if (isMyBoard || boat.isDrowned(shoots)) {
+  private def drawBoat(g: Graphics2D, drawOptions: DrawOptions, boat: Boat, board: SeaBattleGameBoard) = {
+    if (isMyBoard || boat.isDrowned(board.shoots)) {
       boat.coords.foreach { point ⇒
-        if (shoots.contains(point))
-          drawShotBoatPart(g, drawOptions, point)
+        if (board.shoots.contains(point))
+          drawShotBoatPart(g, drawOptions, point, board)
         else
-          drawBoatPart(g, drawOptions, point)
+          drawBoatPart(g, drawOptions, point, board)
       }
     } else {
       boat.coords.foreach { point ⇒
-        if (shoots.contains(point))
-          drawEnemyShotBoatPart(g, drawOptions, point)
+        if (board.shoots.contains(point))
+          drawEnemyShotBoatPart(g, drawOptions, point, board)
       }
     }
   }
 
-  private def drawBoatPart(g: Graphics2D, drawOptions: DrawOptions, point: Point) = {
+  private def drawBoatPart(g: Graphics2D, drawOptions: DrawOptions, point: Point, board: SeaBattleGameBoard) = {
     if (isMyBoard)
       g.setColor(Color.BLUE)
     else
@@ -168,9 +173,14 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
     ))
   }
 
-  private def drawShotBoatPart(g: Graphics2D, drawOptions: DrawOptions, point: Point) = {
-    drawBoatPart(g, drawOptions, point)
-    g.setColor(Color.RED)
+  private def drawShotBoatPart(g: Graphics2D, drawOptions: DrawOptions, point: Point, board: SeaBattleGameBoard) = {
+    drawBoatPart(g, drawOptions, point, board)
+    if (board.isLast(point)) {
+      g.setColor(Color.RED)
+    }
+    else {
+      g.setColor(Color.ORANGE)
+    }
     g.fill(new Ellipse2D.Double (
       point.x * drawOptions.pointWidth + drawOptions.borderWidth*4,
       point.y * drawOptions.pointHeight + drawOptions.borderWidth*4,
@@ -179,8 +189,13 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
     ))
   }
 
-  private def drawMissedShoot(g: Graphics2D, drawOptions: DrawOptions, point: Point) = {
-    g.setColor(Color.GRAY)
+  private def drawMissedShoot(g: Graphics2D, drawOptions: DrawOptions, point: Point, board: SeaBattleGameBoard) = {
+    if (board.isLast(point)) {
+      g.setColor(Color.BLACK)
+    }
+    else {
+      g.setColor(Color.GRAY)
+    }
     g.fill(new Ellipse2D.Double (
       point.x * drawOptions.pointWidth + drawOptions.borderWidth*4,
       point.y * drawOptions.pointHeight + drawOptions.borderWidth*4,
@@ -189,8 +204,13 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
     ))
   }
 
-  private def drawEnemyShotBoatPart(g: Graphics2D, drawOptions: DrawOptions, point: Point) = {
-    g.setColor(Color.RED)
+  private def drawEnemyShotBoatPart(g: Graphics2D, drawOptions: DrawOptions, point: Point, board: SeaBattleGameBoard) = {
+    if (board.isLast(point)) {
+      g.setColor(Color.RED)
+    }
+    else {
+      g.setColor(Color.ORANGE)
+    }
     g.fill(new Ellipse2D.Double (
       point.x * drawOptions.pointWidth + drawOptions.borderWidth*4,
       point.y * drawOptions.pointHeight + drawOptions.borderWidth*4,
