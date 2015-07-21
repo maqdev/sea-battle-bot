@@ -52,7 +52,7 @@ class BotServiceActor extends Actor with HttpService {
                   try {
                     implicit val factory = new DefaultSerializerFactory[CamelCaseToSnakeCaseConverter]
                     implicit val defaultSerializerFactory = new DefaultValueSerializerFactory[CamelCaseToSnakeCaseConverter]
-                  
+
                     val update = data.parseJson[MessageUpdate]
                     val actorRef = gameActors.getOrElse(update.message.chat,
                       synchronized {
@@ -66,7 +66,7 @@ class BotServiceActor extends Actor with HttpService {
                   }
                   catch {
                     case e: Throwable ⇒
-                      log.error("Failed: ", e)
+                      log.error(e, "Failed. ")
                       HttpResponse(StatusCodes.InternalServerError, HttpEntity(ContentType(`text/html`), "failed"))
                   }
                 }
