@@ -37,7 +37,7 @@ class BotServiceActor extends Actor with HttpService {
               }
               else {
                 complete {
-                  HttpResponse(StatusCodes.OK, HttpEntity(ContentType(`text/html`), "YYYY"))
+                  HttpResponse(StatusCodes.OK, HttpEntity(ContentType(`text/html`), "Hi!"))
                 }
               }
           }
