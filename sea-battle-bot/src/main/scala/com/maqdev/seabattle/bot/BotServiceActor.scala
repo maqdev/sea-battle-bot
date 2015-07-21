@@ -25,7 +25,7 @@ class BotServiceActor extends Actor with HttpService {
         }
       }
     } ~
-      path("/sea-battle/webhook" / RestPath ) { token ⇒
+      path("sea-battle" / "webhook" / RestPath ) { token ⇒
         post {
           entity(as[String]) {
             data ⇒
