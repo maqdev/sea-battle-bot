@@ -24,12 +24,6 @@ object Boot extends App {
   val serverPort = conf.getInt("port")
   val serverInterface = conf.getString("interface")
 
-  val telegramToken = conf.getString("telegram-token")
-  val token = conf.getString("token")
-  val myUrl = conf.getString("my-url")
-  val botApi = new BotApi(telegramToken, system)
-  botApi.setWebhook(myUrl + token)
-
   implicit val timeout = Timeout(5.seconds)
   // start a new HTTP server on port 8080 with our service actor as the handler
   IO(Http) ? Http.Bind(service, interface = serverInterface, port = serverPort)
