@@ -21,7 +21,7 @@ class BotServiceActor extends Actor with HttpService {
   val botApi = new BotApi(telegramToken, context.system)
   botApi.setWebhook(myUrl + token)
 
-  val gameActors = TrieMap[Either[User, GroupChat], ActorRef]()
+  val gameActors = TrieMap[Int, ActorRef]()
 
   def actorRefFactory = context
   def receive = runRoute(myRoute)
@@ -54,10 +54,14 @@ class BotServiceActor extends Actor with HttpService {
                     implicit val defaultSerializerFactory = new DefaultValueSerializerFactory[CamelCaseToSnakeCaseConverter]
 
                     val update = data.parseJson[MessageUpdate]
-                    val actorRef = gameActors.getOrElse(update.message.chat,
+                    val id = update.message.chat match {
+                      case Left(user) ⇒ user.id
+                      case Right(chatGroup) ⇒ chatGroup.id
+                    }
+                    val actorRef = gameActors.getOrElse(id,
                       synchronized {
-                        val newGame = context.system.actorOf(Props(new GameActor(botApi)), update.message.chat.toString)
-                        gameActors.put(update.message.chat, newGame)
+                        val newGame = context.system.actorOf(Props(new GameActor(botApi)), "G" + id)
+                        gameActors.put(id, newGame)
                         newGame
                       }
                     )
