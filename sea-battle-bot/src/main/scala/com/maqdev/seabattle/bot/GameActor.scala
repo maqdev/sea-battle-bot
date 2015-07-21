@@ -10,7 +10,7 @@ import spray.http._
 import scala.concurrent.Future
 
 class GameActor(botApi: BotApi) extends Actor with ActorLogging{
-  val coordsRegex = """^/*([a-z]+)([0-9]+)$""".r
+  val coordsRegex = """^/*([a-zA-Z]+)([0-9]+)$""".r
 
   override def receive: Receive = {
     case update: MessageUpdate ⇒ {
@@ -21,8 +21,8 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
       botApi.sendMessage(update.message.chat, s"Yo $name! Lets play?")
       botApi.sendSticker(update.message.chat, Stickers.piratMika)
 
-      val height = 10
-      val width = 10
+      val height = 9
+      val width = 9
       val creator = new SeaBattleGameCreator(width, height, List(1,2,2,3,3))
       val myBoard = creator.createBoard
       val enemyBoard = creator.createBoard
@@ -36,7 +36,7 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
     case update: MessageUpdate ⇒ {
       update.message.text match {
         case Some(coordsRegex(y, x)) ⇒ {
-          val shootPoint = Point(x.toInt, y(0).toInt - 'a'.toInt)
+          val shootPoint = Point(x.toInt-1, y(0).toLower.toInt - 'a'.toInt)
           if (shootPoint.x < 0 || shootPoint.x >= enemyBoard.width ||
             shootPoint.y < 0 || shootPoint.y >= enemyBoard.height) {
             send(update.message.chat, "Coordinates are wrong!")
@@ -76,7 +76,7 @@ class GameActor(botApi: BotApi) extends Actor with ActorLogging{
 
   def sendBoard(chat: Either[User, GroupChat], myBoard: SeaBattleGameBoard, isMyBoard: Boolean): Future[String] = {
     val out = new ByteArrayOutputStream()
-    val drawer = new ImageBoardDrawer(500,500,"png",out,isMyBoard)
+    val drawer = new ImageBoardDrawer(300,300,"png",out,isMyBoard)
     drawer.drawBoard(myBoard)
     val httpData = HttpData(out.toByteArray)
     val httpEntity = HttpEntity(MediaTypes.`image/png`, httpData).asInstanceOf[HttpEntity.NonEmpty]

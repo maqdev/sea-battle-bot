@@ -110,7 +110,7 @@ class ImageBoardDrawer(width: Int, height: Int, format: String = "png", outputSt
       g.setFont(new Font("Courier", Font.PLAIN, ((pointHeight+pointWidth)/3).toInt))
 
       for (x ← 1 to board.width) {
-        val c = (x - 1).toString
+        val c = x.toString
         g.drawString(c.toString, ((x-1) * drawOptions.pointWidth + drawOptions.pointWidth/3).toFloat, (height - pointHeight/2).toFloat)
       }
       for (y ← 1 to board.height) {
