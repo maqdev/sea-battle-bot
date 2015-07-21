@@ -22,6 +22,10 @@ class BotApi(token: String, implicit val system: ActorSystem) {
     } map { s ⇒
       log.info("<-- telegram: {} ", s)
       s
+    } recover {
+      case e: Throwable ⇒
+        log.error("<-- telegram: {} ", e)
+        ""
     }
   }
 }
